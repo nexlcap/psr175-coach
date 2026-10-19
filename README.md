@@ -30,8 +30,7 @@ of its own. So I vibe-coded an interactive manual for it. That worked so
 well that I thought: why stop there?
 
 Two days of evening hours later, this web app was on GitHub — complete with
-some truly ridiculous-looking hands (they've since been to the beauty salon).
-Anyway: my family actually has a lot of fun with it, playing on the tablet
+some truly ridiculous-looking hands at first. Anyway: my family actually has a lot of fun with it, playing on the tablet
 as a virtual keyboard, or using it as a practice assistant next to the real
 one, which listens through the microphone.
 
