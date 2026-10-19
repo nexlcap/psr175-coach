@@ -19,3 +19,19 @@ listening so you can play on the real instrument.
 ## Songs
 
 All included songs are traditional/public-domain melodies.
+
+## The story
+
+I wanted to learn keyboard together with my child on our two-decades-old
+Yamaha PSR-175, using its built-in learning system — and discovered that
+*reading the user manual of a 20-year-old keyboard* is a learning challenge
+of its own. So I vibe-coded an interactive manual for it. That worked so
+well that I thought: why stop there?
+
+Two days of evening hours later, this web app was on GitHub — complete with
+some truly ridiculous-looking hands (they've since been to the beauty salon).
+Anyway: my family actually has a lot of fun with it, playing on the tablet
+as a virtual keyboard, or using it as a practice assistant next to the real
+one, which listens through the microphone.
+
+Built with [Claude](https://claude.com), one evening question at a time.
