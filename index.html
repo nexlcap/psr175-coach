@@ -637,7 +637,8 @@ function drawHands(){
     const tp=[0,0,0,0,0,0];
     evs.forEach(e=>{tx[e.f]=keys[e.m]._x-sc; ty[e.f]=isBlack(e.m)?kbTop+kbH*(e.f===1?.56:.50):kbTop+kbH*(e.f===1?.84:e.f===5?.78:Math.min(restTip[e.f],.74))+S.sh*.7; tp[e.f]=pressed?1:cue?.35:0;});
     if(!S.fx||Math.abs(S.fx[3]-tx[3])>W){S.fx=tx.slice();S.ty=ty.slice();}
-    for(let i=1;i<=5;i++){S.fx[i]+=(tx[i]-S.fx[i])*.24; S.ty[i]+=(ty[i]-S.ty[i])*.24; S.p[i]+=(tp[i]-S.p[i])*.35;}
+    const lz=mode==='wait'?.42:.24;
+    for(let i=1;i<=5;i++){S.fx[i]+=(tx[i]-S.fx[i])*lz; S.ty[i]+=(ty[i]-S.ty[i])*lz; S.p[i]+=(tp[i]-S.p[i])*.35;}
     // knuckles: a gentle arc just in front of the keys, slightly narrower than the fingertips
     const cxm=(S.fx[2]+S.fx[5])/2, kyBase=kbBot+Math.max(8,lipH*.34)+S.sh*.9;
     const kx=[0],ky=[0]; const arc=[0,0,.10,-.08,.0,.28];
@@ -693,11 +694,12 @@ function drawHands(){
     // 4) cue on the finger to use
     for(let i=1;i<=5;i++){ if(!tp[i])continue;
       const ccol=kid?(FCOL[i]||col):col;
-      const x=S.fx[i], y=tipY(i)+WT[i]*.42, r=WT[i]*.62;
+      const e=evs.find(z=>z.f===i); if(!e)continue;
+      const x=keys[e.m]._x-sc, y=ty[i]+WT[i]*.42, r=WT[i]*.62;
       hx.save(); hx.strokeStyle=ccol; hx.lineWidth=3; hx.shadowColor=ccol; hx.shadowBlur=12;
       hx.globalAlpha=pressed?1:.55+.45*Math.sin(performance.now()/170);
       hx.beginPath(); hx.arc(x,y,r,0,7); hx.stroke(); hx.restore();
-      const e=evs.find(z=>z.f===i); const label=i+'  '+noteName(e.m);
+      const label=i+'  '+noteName(e.m);
       hx.font='800 13px Archivo, sans-serif'; const tw=hx.measureText(label).width+16, bh=22;
       let by=tipY(i)-bh-10; if(by<kbTop-bh-4)by=kbTop-bh-4; if(by<2)by=2;
       hx.fillStyle=ccol; hrr(x-tw/2,by,tw,bh,11); hx.fill();
