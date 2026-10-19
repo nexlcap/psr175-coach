@@ -617,8 +617,8 @@ function drawHands(){
   if(!fingersOn||!data)return;
   const kbTop=$('lane').offsetHeight, kbH=$('kbd').offsetHeight, kbBot=kbTop+kbH, sc=$('kscroll').scrollLeft;
   const u=Math.max(22,Math.min(84,whiteW));                 // one white key ≈ one finger spacing
-  const WB=[0,1.08,.92,.96,.90,.78].map(x=>x*u), WT=[0,.92,.78,.82,.76,.66].map(x=>x*u);
-  const restTip=[0,.88,.70,.64,.68,.76];                       // where each fingertip rests (fraction down the keys)
+  const WB=[0,.94,.80,.84,.78,.68].map(x=>x*u), WT=[0,.80,.68,.72,.66,.57].map(x=>x*u);
+  const restTip=[0,.86,.67,.61,.65,.73];                       // where each fingertip rests (fraction down the keys)
   const lipH=H-kbBot;
   const list=[]; if(shown('L'))list.push(['L',colors.lh]); if(shown('R'))list.push(['R',colors.rh]);
   list.forEach(([h,col])=>{
@@ -637,8 +637,8 @@ function drawHands(){
     // knuckles: a gentle arc just in front of the keys, slightly narrower than the fingertips
     const cxm=(S.fx[2]+S.fx[5])/2, kyBase=kbBot+Math.max(8,lipH*.34);
     const kx=[0],ky=[0]; const arc=[0,0,.10,-.08,.0,.28];
-    for(let i=2;i<=5;i++){kx[i]=cxm+dir*(i-3.5)*u*.9; ky[i]=kyBase+arc[i]*u;}
-    const tbx=cxm-dir*2.15*u, tby=kyBase+1.05*u;               // thumb joint, low on the hand
+    for(let i=2;i<=5;i++){kx[i]=cxm+dir*(i-3.5)*u*.66; ky[i]=kyBase+arc[i]*u;}
+    const tbx=cxm-dir*1.72*u, tby=kyBase+.95*u;               // thumb joint, low on the hand
     // fingertip pulled back a little when pressing (finger curls into the key)
     const tipY=i=>S.ty[i]+S.p[i]*(tp[i]?u*.12:0);
     // soft contact shadows under the fingertips, on the keys
@@ -650,15 +650,15 @@ function drawHands(){
     // 1) thumb (drawn first so the back of the hand covers its root)
     drawFinger(tbx,tby,S.fx[1],tipY(1),WB[1],WT[1],1,S.p[1],dir*u*.26);
     // 2) back of the hand
-    const e2=kx[2]-dir*WB[2]*.6, e5=kx[5]+dir*WB[5]*.62;
+    const e2=kx[2]-dir*WB[2]*.48, e5=kx[5]+dir*WB[5]*.5;
     const backPath=()=>{hx.beginPath();
       hx.moveTo(tbx-dir*.55*u,tby+.2*u);
       hx.quadraticCurveTo(tbx+dir*.1*u,ky[2]-.05*u,e2,ky[2]+.05*u);
       hx.quadraticCurveTo(cxm,kyBase-.35*u,e5,ky[5]);
-      hx.quadraticCurveTo(e5+dir*.3*u,ky[5]+.9*u,e5+dir*.12*u,ky[5]+1.9*u);  // hypothenar bulge
-      hx.quadraticCurveTo(e5-dir*.05*u,ky[5]+2.8*u,e5-dir*.3*u,H+u*2);
-      hx.lineTo(tbx+dir*.1*u,H+u*2);
-      hx.quadraticCurveTo(tbx-dir*.75*u,tby+1.2*u,tbx-dir*.55*u,tby+.2*u);
+      hx.quadraticCurveTo(e5+dir*.22*u,ky[5]+.9*u,e5+dir*.06*u,ky[5]+1.9*u);  // hypothenar bulge
+      hx.quadraticCurveTo(e5-dir*.08*u,ky[5]+2.8*u,e5-dir*.28*u,H+u*2);
+      hx.lineTo(tbx+dir*.15*u,H+u*2);
+      hx.quadraticCurveTo(tbx-dir*.62*u,tby+1.2*u,tbx-dir*.55*u,tby+.2*u);
       hx.closePath();};
     backPath();
     hx.save();
