@@ -566,7 +566,7 @@ function drawFinger(bx,by,tx,ty,wb,wt,num,press,bend){
   fingerPath(G);
   hx.save(); hx.shadowColor='rgba(40,20,8,'+(.26-press*.11)+')'; hx.shadowBlur=9-press*4; hx.shadowOffsetX=1.5; hx.shadowOffsetY=5-press*2.5;
   hx.fillStyle=skinFill(S[0][0],S[0][1],G.Nm[0][0],G.Nm[0][1],wb); hx.fill(); hx.restore();
-  hx.strokeStyle='rgba(136,84,54,.38)'; hx.lineWidth=2; hx.lineJoin='round'; hx.stroke();
+  hx.strokeStyle='rgba(136,84,54,.38)'; hx.lineWidth=1.7; hx.lineJoin='round'; hx.stroke();
   // soft fingertip pad blush, clipped to the finger
   hx.save(); fingerPath(G); hx.clip();
   const rg=hx.createRadialGradient(S[N][0],S[N][1],0,S[N][0],S[N][1],wt*.9);
@@ -617,7 +617,7 @@ function drawHands(){
   if(!fingersOn||!data)return;
   const kbTop=$('lane').offsetHeight, kbH=$('kbd').offsetHeight, kbBot=kbTop+kbH, sc=$('kscroll').scrollLeft;
   const u=Math.max(22,Math.min(84,whiteW));                 // one white key ≈ one finger spacing
-  const WB=[0,.80,.67,.71,.66,.57].map(x=>x*u), WT=[0,.68,.57,.60,.55,.47].map(x=>x*u);
+  const WB=[0,.72,.60,.64,.59,.51].map(x=>x*u), WT=[0,.61,.51,.54,.50,.42].map(x=>x*u);
   const restTip=[0,.85,.65,.59,.63,.71];                       // where each fingertip rests (fraction down the keys)
   const lipH=H-kbBot;
   const list=[]; if(shown('L'))list.push(['L',colors.lh]); if(shown('R'))list.push(['R',colors.rh]);
@@ -665,7 +665,7 @@ function drawHands(){
     hx.shadowColor='rgba(40,20,8,.26)'; hx.shadowBlur=16; hx.shadowOffsetY=7;
     const g=hx.createRadialGradient(cxm-dir*u*.5,kyBase+.6*u,u*.3,cxm,kyBase+1.3*u,u*3.6);
     g.addColorStop(0,SKIN.light); g.addColorStop(.45,SKIN.base); g.addColorStop(.82,SKIN.shade); g.addColorStop(1,SKIN.deep);
-    hx.fillStyle=g; hx.fill(); hx.restore(); hx.strokeStyle='rgba(136,84,54,.38)'; hx.lineWidth=2; hx.lineJoin='round'; hx.stroke();
+    hx.fillStyle=g; hx.fill(); hx.restore(); hx.strokeStyle='rgba(136,84,54,.38)'; hx.lineWidth=1.7; hx.lineJoin='round'; hx.stroke();
     // inside the hand: texture, occlusion under the finger bases, knuckle mounds, soft tendons
     hx.save(); backPath(); hx.clip();
     texture(.5,Math.min(e2,e5)-u,kyBase-u,Math.abs(e5-e2)+u*2,H);
