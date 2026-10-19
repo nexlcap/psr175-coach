@@ -543,7 +543,7 @@ function fingerGeom(bx,by,tx,ty,wb,wt,bend){ // curved finger: quadratic spine, 
   for(let i=0;i<=N;i++){const f=i/N,g=1-f;
     S.push([g*g*bx+2*g*f*mx+f*f*ex, g*g*by+2*g*f*my+f*f*ey]);
     let w=wb+(wt-wb)*(f*f*(3-2*f));
-    w*=1+.035*Math.exp(-(f-.33)*(f-.33)/.018)+.028*Math.exp(-(f-.66)*(f-.66)/.014);
+    w*=1+.018*Math.exp(-(f-.33)*(f-.33)/.018)+.014*Math.exp(-(f-.66)*(f-.66)/.014);
     Wd.push(w);}
   const Nm=[];
   for(let i=0;i<=N;i++){const p=S[Math.max(0,i-1)],q=S[Math.min(N,i+1)];
@@ -566,7 +566,7 @@ function drawFinger(bx,by,tx,ty,wb,wt,num,press,bend){
   fingerPath(G);
   hx.save(); hx.shadowColor='rgba(40,20,8,'+(.26-press*.11)+')'; hx.shadowBlur=9-press*4; hx.shadowOffsetX=1.5; hx.shadowOffsetY=5-press*2.5;
   hx.fillStyle=skinFill(S[0][0],S[0][1],G.Nm[0][0],G.Nm[0][1],wb); hx.fill(); hx.restore();
-  hx.strokeStyle=SKIN.line; hx.lineWidth=1; hx.stroke();
+  hx.strokeStyle='rgba(136,84,54,.38)'; hx.lineWidth=2; hx.lineJoin='round'; hx.stroke();
   // soft fingertip pad blush, clipped to the finger
   hx.save(); fingerPath(G); hx.clip();
   const rg=hx.createRadialGradient(S[N][0],S[N][1],0,S[N][0],S[N][1],wt*.9);
@@ -574,7 +574,7 @@ function drawFinger(bx,by,tx,ty,wb,wt,num,press,bend){
   hx.fillStyle=rg; hx.fillRect(S[N][0]-wt,S[N][1]-wt,wt*2,wt*2);
   const bbx=Math.min(S[0][0],S[N][0])-wb, bby=Math.min(S[0][1],S[N][1])-wb,
         bbw=Math.abs(S[0][0]-S[N][0])+wb*2, bbh=Math.abs(S[0][1]-S[N][1])+wb*2;
-  texture(.5,bbx,bby,bbw,bbh);
+  texture(.32,bbx,bby,bbw,bbh);
   // lengthwise light: brighter toward the tip, gently shaded toward the base
   const lg=hx.createLinearGradient(S[N][0],S[N][1],S[0][0],S[0][1]);
   lg.addColorStop(0,'rgba(255,246,232,.13)'); lg.addColorStop(.45,'rgba(255,246,232,0)'); lg.addColorStop(1,'rgba(90,50,28,.11)');
@@ -586,11 +586,9 @@ function drawFinger(bx,by,tx,ty,wb,wt,num,press,bend){
   hx.fillStyle=sg; hx.fillRect(kp[0]-G.Wd[ki],kp[1]-G.Wd[ki],G.Wd[ki]*2,G.Wd[ki]*2);
   hx.restore();
   // joint creases: soft shadow line with a light line beneath
-  [.32,.62].forEach(f=>{const i=Math.round(f*N),p=S[i],n=G.Nm[i],w=G.Wd[i]*.32,u2=G.ux,v2=G.uy;
-    hx.strokeStyle=SKIN.crease; hx.lineWidth=1;
-    hx.beginPath(); hx.moveTo(p[0]-n[0]*w,p[1]-n[1]*w); hx.quadraticCurveTo(p[0]+u2*2.2,p[1]+v2*2.2,p[0]+n[0]*w,p[1]+n[1]*w); hx.stroke();
-    hx.strokeStyle='rgba(255,240,224,.13)';
-    hx.beginPath(); hx.moveTo(p[0]-n[0]*w*.8+u2*1.8,p[1]-n[1]*w*.8+v2*1.8); hx.quadraticCurveTo(p[0]+u2*3.8,p[1]+v2*3.8,p[0]+n[0]*w*.8+u2*1.8,p[1]+n[1]*w*.8+v2*1.8); hx.stroke();});
+  [.36,.66].forEach((f,ci)=>{const i=Math.round(f*N),p=S[i],n=G.Nm[i],w=G.Wd[i]*(ci?0.24:0.28),u2=G.ux,v2=G.uy;
+    hx.strokeStyle='rgba(128,76,48,.12)'; hx.lineWidth=1.2;
+    hx.beginPath(); hx.moveTo(p[0]-n[0]*w,p[1]-n[1]*w); hx.quadraticCurveTo(p[0]+u2*2,p[1]+v2*2,p[0]+n[0]*w,p[1]+n[1]*w); hx.stroke();});
   // fingernail: rounded nail plate with lunula and a sheen
   const nl=Math.min(G.L*.17,wt*.44), nx2=S[N][0]-G.ux*nl*.9, ny2=S[N][1]-G.uy*nl*.9, nw=wt*.52;
   hx.save(); hx.translate(nx2,ny2); hx.rotate(G.a);
@@ -619,8 +617,8 @@ function drawHands(){
   if(!fingersOn||!data)return;
   const kbTop=$('lane').offsetHeight, kbH=$('kbd').offsetHeight, kbBot=kbTop+kbH, sc=$('kscroll').scrollLeft;
   const u=Math.max(22,Math.min(84,whiteW));                 // one white key ≈ one finger spacing
-  const WB=[0,1.0,.84,.88,.82,.70].map(x=>x*u), WT=[0,.80,.66,.70,.64,.55].map(x=>x*u);
-  const restTip=[0,.84,.62,.55,.60,.70];                       // where each fingertip rests (fraction down the keys)
+  const WB=[0,1.08,.92,.96,.90,.78].map(x=>x*u), WT=[0,.92,.78,.82,.76,.66].map(x=>x*u);
+  const restTip=[0,.88,.70,.64,.68,.76];                       // where each fingertip rests (fraction down the keys)
   const lipH=H-kbBot;
   const list=[]; if(shown('L'))list.push(['L',colors.lh]); if(shown('R'))list.push(['R',colors.rh]);
   list.forEach(([h,col])=>{
@@ -637,7 +635,7 @@ function drawHands(){
     const S=HS[h]; if(!S.fx||Math.abs(S.fx[3]-tx[3])>W){S.fx=tx.slice();S.ty=ty.slice();}
     for(let i=1;i<=5;i++){S.fx[i]+=(tx[i]-S.fx[i])*.24; S.ty[i]+=(ty[i]-S.ty[i])*.24; S.p[i]+=(tp[i]-S.p[i])*.35;}
     // knuckles: a gentle arc just in front of the keys, slightly narrower than the fingertips
-    const cxm=(S.fx[2]+S.fx[5])/2, kyBase=kbBot+Math.max(10,lipH*.42);
+    const cxm=(S.fx[2]+S.fx[5])/2, kyBase=kbBot+Math.max(8,lipH*.34);
     const kx=[0],ky=[0]; const arc=[0,0,.10,-.08,.0,.28];
     for(let i=2;i<=5;i++){kx[i]=cxm+dir*(i-3.5)*u*.9; ky[i]=kyBase+arc[i]*u;}
     const tbx=cxm-dir*2.15*u, tby=kyBase+1.05*u;               // thumb joint, low on the hand
@@ -650,7 +648,7 @@ function drawHands(){
       hx.save(); hx.translate(x,y); hx.scale(1,.42); hx.translate(-x,-y);
       hx.fillStyle=cg; hx.fillRect(x-WT[i],y-WT[i],WT[i]*2,WT[i]*2); hx.restore();}
     // 1) thumb (drawn first so the back of the hand covers its root)
-    drawFinger(tbx,tby,S.fx[1],tipY(1),WB[1],WT[1],1,S.p[1],dir*u*.22);
+    drawFinger(tbx,tby,S.fx[1],tipY(1),WB[1],WT[1],1,S.p[1],dir*u*.26);
     // 2) back of the hand
     const e2=kx[2]-dir*WB[2]*.6, e5=kx[5]+dir*WB[5]*.62;
     const backPath=()=>{hx.beginPath();
@@ -667,7 +665,7 @@ function drawHands(){
     hx.shadowColor='rgba(40,20,8,.26)'; hx.shadowBlur=16; hx.shadowOffsetY=7;
     const g=hx.createRadialGradient(cxm-dir*u*.5,kyBase+.6*u,u*.3,cxm,kyBase+1.3*u,u*3.6);
     g.addColorStop(0,SKIN.light); g.addColorStop(.45,SKIN.base); g.addColorStop(.82,SKIN.shade); g.addColorStop(1,SKIN.deep);
-    hx.fillStyle=g; hx.fill(); hx.restore(); hx.strokeStyle=SKIN.line; hx.lineWidth=1; hx.stroke();
+    hx.fillStyle=g; hx.fill(); hx.restore(); hx.strokeStyle='rgba(136,84,54,.38)'; hx.lineWidth=2; hx.lineJoin='round'; hx.stroke();
     // inside the hand: texture, occlusion under the finger bases, knuckle mounds, soft tendons
     hx.save(); backPath(); hx.clip();
     texture(.5,Math.min(e2,e5)-u,kyBase-u,Math.abs(e5-e2)+u*2,H);
@@ -687,7 +685,7 @@ function drawHands(){
     // 3) fingers 2–5, back to front so the middle finger sits on top
     const order=dir===1?[5,4,2,3]:[5,4,2,3];
     const vec=[];
-    order.forEach(i=>{vec[i]=drawFinger(kx[i],ky[i],S.fx[i],tipY(i),WB[i],WT[i],i,S.p[i],dir*(3.3-i)*u*.045);});
+    order.forEach(i=>{vec[i]=drawFinger(kx[i],ky[i],S.fx[i],tipY(i),WB[i],WT[i],i,S.p[i],dir*(3.3-i)*u*.06);});
     // 4) cue on the finger to use
     for(let i=1;i<=5;i++){ if(!tp[i])continue;
       const ccol=kid?(FCOL[i]||col):col;
