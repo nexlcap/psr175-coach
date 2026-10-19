@@ -1,9 +1,4 @@
-<!doctype html><html lang="en"><head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
-</head><body>
-<title>PSR-175 Coach</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>PSR-175 Coach</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..800&family=Share+Tech+Mono&display=swap">
@@ -761,7 +756,7 @@ function tick(now){
     if(loop==='bar'&&t>=barStart(song,loopBar+1)-1e-6&&t<barStart(song,loopBar+1)+song.ts){seekTo(barStart(song,loopBar)); playing=true; setPlayIcon();}
     else if(t>=data.total){ if(loop!=='off'){seekTo(loop==='bar'?barStart(song,loopBar):0); playing=true; setPlayIcon();} else {stop(); active={R:[],L:[]}; markKeys(); if(kid&&mode!=='watch')celebrate(); setHint(mode==='watch'?'Finished. Try <b>Play along</b> or <b>Wait for me</b> next.':'Finished! '+($('lGrade').textContent||''));}}
   }
-  frame(); if(store.get('kid',false))setKid(true);
+  frame();
 requestAnimationFrame(tick);}
 let riseKeys=[];
 const busy=k=>k.classList.contains('r')||k.classList.contains('l')||k.classList.contains('want');
@@ -898,7 +893,7 @@ $('kscroll').addEventListener('scroll',()=>drawLane(),{passive:true});
 document.addEventListener('contextmenu',e=>{ if(kid||e.target.closest('.stage,.kidbar,.tb,.kb,.seg,.key'))e.preventDefault(); });
 window.addEventListener('resize',()=>relayout());
 loadSong(+sel.value); setSpeed(speed); setHint(MODEHINT[mode]+' Press <b>Play</b> to start.');
+if(store.get('kid',false))setKid(true);
 requestAnimationFrame(tick);
 </script>
-
 </body></html>
