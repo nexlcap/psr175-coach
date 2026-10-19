@@ -173,6 +173,13 @@ body.kid .key .fn{width:26px;height:26px;line-height:26px;font-size:15px;color:#
 body.kid,body.kid *{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 
+/* ===== Collapsible control panel — hidden by default for a full-screen keyboard ===== */
+#bPlayMini{display:none}
+body.nopanel #bPlayMini{display:grid}
+body.nopanel .bar{display:none!important}
+#bPanel.on{background:var(--accent);color:var(--accent-ink)}
+body.nopanel .kbd{height:clamp(130px,32vh,300px)}
+
 /* ===== Landscape: display + keyboard on the left, controls in a side column ===== */
 .rotate{display:none}
 .fs{display:none}
@@ -207,6 +214,10 @@ body.kid,body.kid *{-webkit-touch-callout:none;-webkit-user-select:none;user-sel
   .hint{font-size:12px}
   .fs{display:grid}
   .kbd{height:clamp(110px,34vh,240px)}
+  body.nopanel .app{grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto minmax(0,1fr);grid-template-areas:"lcd top" "stage stage"}
+  body.kid.nopanel .app{grid-template-areas:"top top" "stage stage";grid-template-columns:minmax(0,1fr) auto}
+  body.nopanel .songsel{width:auto;max-width:30vw}
+  body.nopanel .kbd{height:clamp(120px,46vh,340px)}
 }
 /* phone held sideways: very little height, keep everything on one screen */
 @media (orientation:landscape) and (max-height:520px){
@@ -217,6 +228,7 @@ body.kid,body.kid *{-webkit-touch-callout:none;-webkit-user-select:none;user-sel
   .lcd .l1:last-child{display:none}
   .staff{max-height:46px}
   .kbd{height:clamp(96px,40vh,180px)}
+  body.nopanel .kbd{height:clamp(96px,52vh,260px)}
   .lip{height:clamp(26px,9vh,46px)}
   .key{font-size:10px;padding-bottom:4px}
   .tb{min-height:40px;min-width:40px;border-radius:10px}
@@ -240,6 +252,8 @@ body.kid,body.kid *{-webkit-touch-callout:none;-webkit-user-select:none;user-sel
     <select id="song" class="songsel" aria-label="Song"></select>
     <div id="kidTitle"></div>
     <button class="tb sm" id="bKid" aria-label="Kindermodus" title="Kindermodus">🧒</button>
+    <button class="tb sm" id="bPlayMini" aria-label="Play"><svg viewBox="0 0 24 24" id="playIcoM"><path d="M7 4v16l13-8z"/></svg></button>
+    <button class="tb sm" id="bPanel" aria-label="Show controls" title="Show/hide controls"><svg viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></svg></button>
   </div>
 
   <div class="lcd" aria-live="polite">
@@ -690,7 +704,8 @@ function kidStatus(){const el=$('kStatus'); if(!el)return;
   else { if(kp)kp.textContent=playing?'⏸ Pause':'▶ Play';
     el.textContent=playing?'🎵 Listen closely…':'▶ Play starts the song';}}
 function setPlayIcon(){kidStatus();
-  $('playIco').innerHTML=playing?'<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>':'<path d="M7 4v16l13-8z"/>'; $('bPlay').setAttribute('aria-label',playing?'Pause':'Play');}
+  $('playIco').innerHTML=playing?'<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>':'<path d="M7 4v16l13-8z"/>'; $('bPlay').setAttribute('aria-label',playing?'Pause':'Play');
+  $('playIcoM').innerHTML=$('playIco').innerHTML; $('bPlayMini').setAttribute('aria-label',playing?'Pause':'Play');}
 function togglePlay(force){audio(); soundCheck(); if(force===true){playing=true}else{playing=!playing}
   if(playing&&t>=data.total-1e-6)seekTo(0);
   if(playing&&t===0&&!waiting&&!(kid&&mode==='wait')){t=-song.ts*(song.ts<2?2:1); lastBeat=null;} // count-in
@@ -700,6 +715,7 @@ function seekTo(time){t=time; PARTS.forEach(h=>{let i=data[h].findIndex(e=>e.s>=
 function gotoBar(b){b=Math.max(firstBar(song),Math.min(data.bars,b)); const wasPlaying=playing; seekTo(barStart(song,b)); playing=wasPlaying; lastTs=performance.now(); setPlayIcon();
   if(loop==='bar'){loopBar=b; showLoop();} toast('Bar '+b+' of '+data.bars); markKeys(); frame(true);}
 $('bPlay').addEventListener('click',()=>togglePlay());
+$('bPlayMini').addEventListener('click',()=>togglePlay());
 $('bRestart').addEventListener('click',()=>{hits=0;misses=0;grade(); seekTo(0); if(loop==='bar'){loopBar=firstBar(song); showLoop();}
   if(playing&&mode!=='wait'){t=-song.ts*(song.ts<2?2:1); lastBeat=null;} lastTs=performance.now(); toast('Back to the start'); markKeys(); frame(true);});
 $('bPrev').addEventListener('click',()=>gotoBar(curBar()-1));
@@ -883,6 +899,9 @@ $('bFull').addEventListener('click',async()=>{const d=document,el=d.documentElem
       await req.call(el); try{await screen.orientation.lock('landscape')}catch(e){}} }
   catch(e){ toast('Full screen is blocked here'); setHint('<b>Full screen is blocked inside this window.</b> On a tablet: open this page on its own in the browser (not inside the Claude app), then turn the tablet sideways. iPad Safari: tap <b>aA</b> in the address bar → <b>Hide Toolbar</b>. Android Chrome: use this button again there.'); }});
 let rT; const relayout=()=>{clearTimeout(rT); rT=setTimeout(()=>{layoutKeyboard(); markKeys(); frame(true)},120)};
+function setPanel(v){document.body.classList.toggle('nopanel',!v); const b=$('bPanel'); b.classList.toggle('on',v);
+  b.setAttribute('aria-label',v?'Hide controls':'Show controls'); store.set('panel',v); setPlayIcon(); relayout();}
+$('bPanel').addEventListener('click',()=>setPanel(document.body.classList.contains('nopanel')));
 window.addEventListener('orientationchange',relayout); document.addEventListener('fullscreenchange',relayout);
 
 /* init */
@@ -893,6 +912,7 @@ $('kscroll').addEventListener('scroll',()=>drawLane(),{passive:true});
 document.addEventListener('contextmenu',e=>{ if(kid||e.target.closest('.stage,.kidbar,.tb,.kb,.seg,.key'))e.preventDefault(); });
 window.addEventListener('resize',()=>relayout());
 loadSong(+sel.value); setSpeed(speed); setHint(MODEHINT[mode]+' Press <b>Play</b> to start.');
+setPanel(store.get('panel',false));
 if(store.get('kid',false))setKid(true);
 requestAnimationFrame(tick);
 </script>
