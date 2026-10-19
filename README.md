@@ -23,7 +23,8 @@ All included songs are traditional/public-domain melodies.
 ## The story
 
 I wanted to learn keyboard together with my child on a two-decades-old
-Yamaha PSR-175 — a leftover from a friend — using its built-in learning system — and discovered that
+Yamaha PSR-175, handed down from a friend who no longer needed it, using
+its built-in learning system — and discovered that
 *reading the user manual of a 20-year-old keyboard* is a learning challenge
 of its own. So I vibe-coded an interactive manual for it. That worked so
 well that I thought: why stop there?
