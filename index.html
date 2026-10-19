@@ -618,7 +618,7 @@ function drawHands(){
   const kbTop=$('lane').offsetHeight, kbH=$('kbd').offsetHeight, kbBot=kbTop+kbH, sc=$('kscroll').scrollLeft;
   const u=Math.max(22,Math.min(84,whiteW));                 // one white key ≈ one finger spacing
   const WB=[0,.72,.60,.64,.59,.51].map(x=>x*u), WT=[0,.61,.51,.54,.50,.42].map(x=>x*u);
-  const restTip=[0,.94,.65,.59,.63,.71];                       // where each fingertip rests (fraction down the keys)
+  const restTip=[0,.94,.65,.59,.63,.79];                       // where each fingertip rests (fraction down the keys)
   const lipH=H-kbBot;
   const list=[]; if(shown('L'))list.push(['L',colors.lh]); if(shown('R'))list.push(['R',colors.rh]);
   list.forEach(([h,col])=>{
@@ -635,7 +635,7 @@ function drawHands(){
     const thumb=ax-dir*(a.f-1)*u; const tx=[0],ty=[0];
     for(let i=1;i<=5;i++){tx[i]=thumb+dir*(i-1)*u*(i===1?1.15:1)-(i===1?dir*.15*u:0); ty[i]=kbTop+kbH*restTip[i]+S.sh;}
     const tp=[0,0,0,0,0,0];
-    evs.forEach(e=>{tx[e.f]=keys[e.m]._x-sc; ty[e.f]=isBlack(e.m)?kbTop+kbH*(e.f===1?.56:.50):kbTop+kbH*(e.f===1?.84:Math.min(restTip[e.f],.74))+S.sh*.7; tp[e.f]=pressed?1:cue?.35:0;});
+    evs.forEach(e=>{tx[e.f]=keys[e.m]._x-sc; ty[e.f]=isBlack(e.m)?kbTop+kbH*(e.f===1?.56:.50):kbTop+kbH*(e.f===1?.84:e.f===5?.78:Math.min(restTip[e.f],.74))+S.sh*.7; tp[e.f]=pressed?1:cue?.35:0;});
     if(!S.fx||Math.abs(S.fx[3]-tx[3])>W){S.fx=tx.slice();S.ty=ty.slice();}
     for(let i=1;i<=5;i++){S.fx[i]+=(tx[i]-S.fx[i])*.24; S.ty[i]+=(ty[i]-S.ty[i])*.24; S.p[i]+=(tp[i]-S.p[i])*.35;}
     // knuckles: a gentle arc just in front of the keys, slightly narrower than the fingertips
