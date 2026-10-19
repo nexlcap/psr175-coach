@@ -599,16 +599,15 @@ function drawFinger(bx,by,tx,ty,wb,wt,num,press,bend){
   hx.quadraticCurveTo(nl*1.02,nw*.3,nl*1.02,0);
   hx.quadraticCurveTo(nl*1.02,-nw*.3,nl*.3,-nw*.5);
   hx.closePath();
-  hx.fillStyle=kid&&num?FCOL[num]:SKIN.nail; hx.fill();
+  hx.fillStyle=SKIN.nail; hx.fill();
   hx.strokeStyle=SKIN.nailEdge; hx.lineWidth=1; hx.stroke();
-  if(!(kid&&num)){
-    hx.beginPath(); hx.ellipse(-nl*.5,0,nl*.3,nw*.3,0,0,7);
-    hx.fillStyle='rgba(255,255,255,.35)'; hx.fill();
-    hx.beginPath(); hx.moveTo(-nl*.45,-nw*.3); hx.quadraticCurveTo(nl*.25,-nw*.42,nl*.7,-nw*.14);
-    hx.strokeStyle='rgba(255,255,255,.42)'; hx.lineWidth=1.2; hx.lineCap='round'; hx.stroke();}
+  hx.beginPath(); hx.ellipse(-nl*.5,0,nl*.3,nw*.3,0,0,7);
+  hx.fillStyle='rgba(255,255,255,.35)'; hx.fill();
+  hx.beginPath(); hx.moveTo(-nl*.45,-nw*.3); hx.quadraticCurveTo(nl*.25,-nw*.42,nl*.7,-nw*.14);
+  hx.strokeStyle='rgba(255,255,255,.42)'; hx.lineWidth=1.2; hx.lineCap='round'; hx.stroke();
   hx.restore();
   // small finger number on the nail
-  if(num){hx.fillStyle=kid?'#fff':'rgba(95,55,35,.62)'; hx.font=`700 ${Math.max(9,Math.round(wt*.36))}px Archivo, sans-serif`; hx.textAlign='center'; hx.textBaseline='middle'; hx.fillText(num,nx2,ny2+.5);}
+  if(num){hx.fillStyle='rgba(95,55,35,.62)'; hx.font=`700 ${Math.max(9,Math.round(wt*.36))}px Archivo, sans-serif`; hx.textAlign='center'; hx.textBaseline='middle'; hx.fillText(num,nx2,ny2+.5);}
   return G;}
 function drawHands(){
   const dpr=window.devicePixelRatio||1, W=hv.clientWidth, H=hv.clientHeight;
@@ -693,7 +692,7 @@ function drawHands(){
     order.forEach(i=>{vec[i]=drawFinger(kx[i],ky[i],S.fx[i],tipY(i),WB[i],WT[i],i,S.p[i],dir*(3.3-i)*u*.06);});
     // 4) cue on the finger to use
     for(let i=1;i<=5;i++){ if(!tp[i])continue;
-      const ccol=kid?(FCOL[i]||col):col;
+      const ccol=col;
       const e=evs.find(z=>z.f===i); if(!e)continue;
       const x=keys[e.m]._x-sc, y=ty[i]+WT[i]*.42, r=WT[i]*.62;
       hx.save(); hx.strokeStyle=ccol; hx.lineWidth=3; hx.shadowColor=ccol; hx.shadowBlur=12;
