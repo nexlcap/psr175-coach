@@ -628,14 +628,18 @@ function drawHands(){
     else {evs=group(h); cue=evs.length>0&&(evs[0].s-t)<=1.8;}
     evs=evs.filter(e=>e.f&&keys[e.m]); if(!evs.length)return;
     const dir=h==='R'?1:-1, a=evs[0], ax=keys[a.m]._x-sc;
+    const S=HS[h];
+    // when a black key is played, the whole hand moves in instead of one finger over-stretching
+    const wantSh=evs.some(e=>isBlack(e.m))?-kbH*.16:0;
+    S.sh=S.sh||0; S.sh+=(wantSh-S.sh)*.18;
     const thumb=ax-dir*(a.f-1)*u; const tx=[0],ty=[0];
-    for(let i=1;i<=5;i++){tx[i]=thumb+dir*(i-1)*u*(i===1?1.15:1)-(i===1?dir*.15*u:0); ty[i]=kbTop+kbH*restTip[i];}
+    for(let i=1;i<=5;i++){tx[i]=thumb+dir*(i-1)*u*(i===1?1.15:1)-(i===1?dir*.15*u:0); ty[i]=kbTop+kbH*restTip[i]+S.sh;}
     const tp=[0,0,0,0,0,0];
-    evs.forEach(e=>{tx[e.f]=keys[e.m]._x-sc; ty[e.f]=isBlack(e.m)?kbTop+kbH*.30:kbTop+kbH*Math.min(restTip[e.f],.74); tp[e.f]=pressed?1:cue?.35:0;});
-    const S=HS[h]; if(!S.fx||Math.abs(S.fx[3]-tx[3])>W){S.fx=tx.slice();S.ty=ty.slice();}
+    evs.forEach(e=>{tx[e.f]=keys[e.m]._x-sc; ty[e.f]=isBlack(e.m)?kbTop+kbH*.50:kbTop+kbH*Math.min(restTip[e.f],.74)+S.sh*.7; tp[e.f]=pressed?1:cue?.35:0;});
+    if(!S.fx||Math.abs(S.fx[3]-tx[3])>W){S.fx=tx.slice();S.ty=ty.slice();}
     for(let i=1;i<=5;i++){S.fx[i]+=(tx[i]-S.fx[i])*.24; S.ty[i]+=(ty[i]-S.ty[i])*.24; S.p[i]+=(tp[i]-S.p[i])*.35;}
     // knuckles: a gentle arc just in front of the keys, slightly narrower than the fingertips
-    const cxm=(S.fx[2]+S.fx[5])/2, kyBase=kbBot+Math.max(8,lipH*.34);
+    const cxm=(S.fx[2]+S.fx[5])/2, kyBase=kbBot+Math.max(8,lipH*.34)+S.sh*.9;
     const kx=[0],ky=[0]; const arc=[0,0,.10,-.08,.0,.28];
     for(let i=2;i<=5;i++){kx[i]=cxm+dir*(i-3.5)*u*.66; ky[i]=kyBase+arc[i]*u;}
     const tbx=cxm-dir*1.72*u, tby=kyBase+.95*u;               // thumb joint, low on the hand
