@@ -1,4 +1,4 @@
-<!doctype html><html lang="de"><head>
+<!doctype html><html lang="en"><head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
@@ -153,7 +153,8 @@ body.kid .rotate{display:none}
 body.kid .bar>*:not(.kidbar){display:none!important}
 body.kid .kidbar{display:grid;gap:10px;width:100%;align-content:start}
 .kb{font:800 19px var(--f-ui);border:0;border-radius:16px;min-height:58px;background:var(--surface);border:2px solid var(--line);color:var(--ink);cursor:pointer;touch-action:manipulation}
-#kbPlay{background:var(--accent);color:var(--accent-ink);min-height:74px;font-size:26px;border:0}
+#kbPlay{background:var(--accent);color:var(--accent-ink);min-height:74px;font-size:24px;border:0}
+.kstatus{font:800 17px var(--f-ui);text-align:center;background:var(--lcd);color:var(--lcd-ink);border-radius:12px;padding:10px 8px;min-height:1.4em}
 .krow{display:flex;gap:8px}
 .krow .kb{flex:1;min-width:0}
 .kb.on{background:#2e9d5b;border-color:#2e9d5b;color:#fff}
@@ -263,10 +264,11 @@ body.kid,body.kid *{-webkit-touch-callout:none;-webkit-user-select:none;user-sel
 
   <div class="bar">
     <div class="kidbar" id="kidbar">
-      <button class="kb" id="kbPlay">▶ Los!</button>
-      <div class="krow"><button class="kb" id="kListen">👂 Zuhören</button><button class="kb" id="kPlay2">✋ Spielen</button></div>
+      <div class="kstatus" id="kStatus">👉 Press the glowing key!</div>
+      <button class="kb" id="kbPlay">▶ Play</button>
+      <div class="krow"><button class="kb" id="kListen">👂 Listen</button><button class="kb" id="kPlay2">✋ Play it</button></div>
       <div class="krow" id="kSpeed"><button class="kb" data-s="50">🐢</button><button class="kb" data-s="70">🚶</button><button class="kb" data-s="100">🐰</button></div>
-      <div class="krow"><button class="kb" id="kAgain">🔁 Nochmal</button><button class="kb" id="kMic">🎤 Aus</button></div>
+      <button class="kb" id="kMic">🎤 Mic off — playing on screen</button>
       <div class="kcards" id="kcards"></div>
     </div>
     <div class="grp">
@@ -423,8 +425,7 @@ let song,data,t=0,playing=false,waiting=false,loop=(v=>v===true?'song':(v==='son
 let fingersOn=store.get('fingers',true);
 let kid=false;
 const FCOL=['','#ff5a52','#ffb820','#3fc24d','#3f8cff','#b06cf0'];   // 1 Daumen…5 kleiner Finger
-const KNAMES=["C","C♯","D","D♯","E","F","F♯","G","G♯","A","B","H"]; // deutsche Namen (H statt B)
-const noteName=m=>(kid?KNAMES:NAMES)[((m%12)+12)%12];
+const noteName=m=>NAMES[((m%12)+12)%12];
 let mode=store.get('mode','watch'),hands=store.get('hands','R'),speed=store.get('speed',70);
 let resyncPending=true,aptr={R:0,L:0},beatSched=-1e9,clockA=null,ptr={R:0,L:0},active={R:[],L:[]},okT=-1e9,hitSet=new Set(),lastBeat=null,hits=0,misses=0,actSig='';
 const PARTS=['R','L'];
@@ -687,7 +688,13 @@ function loadSong(i){ song=SONGS[i]; data=build(song); store.set('song',+i); loo
   setHint(`On your PSR-175: <b>Song</b> → <b>${song.n.split('').join(' ')}</b>. ${song.L?'':'Left hand here is a simple chord accompaniment.'}`);}
 function stop(){playing=false; waiting=false; resync(); setPlayIcon();}
 function resync(){silenceScheduled(); aptr={...ptr}; beatSched=Math.ceil(t-1e-6)-1; clockA=null;}
-function setPlayIcon(){const kp=$('kbPlay'); if(kp)kp.textContent=playing?'⏸ Pause':'▶ Los!';
+function kidStatus(){const el=$('kStatus'); if(!el)return;
+  const kp=$('kbPlay');
+  if(mode==='wait'){ if(kp)kp.textContent='↻ Start over';
+    el.textContent=micOn?'🎹 Play the glowing note on your keyboard!':'👉 Press the glowing key!';}
+  else { if(kp)kp.textContent=playing?'⏸ Pause':'▶ Play';
+    el.textContent=playing?'🎵 Listen closely…':'▶ Play starts the song';}}
+function setPlayIcon(){kidStatus();
   $('playIco').innerHTML=playing?'<path d="M6 4h4v16H6zM14 4h4v16h-4z"/>':'<path d="M7 4v16l13-8z"/>'; $('bPlay').setAttribute('aria-label',playing?'Pause':'Play');}
 function togglePlay(force){audio(); soundCheck(); if(force===true){playing=true}else{playing=!playing}
   if(playing&&t>=data.total-1e-6)seekTo(0);
@@ -717,7 +724,7 @@ document.querySelectorAll('#sPre button').forEach(b=>b.addEventListener('click',
 window.addEventListener('keydown',e=>{if(e.target.matches('select,input'))return; if(e.key==='-'||e.key==='ArrowDown'){e.preventDefault();setSpeed(speed-5)} if(e.key==='+'||e.key==='='||e.key==='ArrowUp'){e.preventDefault();setSpeed(speed+5)}});
 function segInit(id,val,cb){document.querySelectorAll('#'+id+' button').forEach(b=>{b.classList.toggle('on',b.dataset.v===val); b.addEventListener('click',()=>{document.querySelectorAll('#'+id+' button').forEach(x=>x.classList.toggle('on',x===b)); cb(b.dataset.v)})})}
 const MODEHINT={watch:'Watch: the song plays and lights up each key as it sounds.',along:'Play along (like Minus One on the PSR-175): the part you practise is very quiet (a soft guide) and you play it on the keys here, in time with the falling notes. Green = right, red = wrong or missed, and you get a grade. The app cannot hear your PSR-175, so only keys tapped on this screen count.',wait:'Wait for me: the glowing key is the one to play. Press it to start, and the song waits at every note until you press the next glowing key, like Lesson 2 on the keyboard.'};
-segInit('modeSeg',mode,v=>{mode=v; store.set('mode',v); hits=0;misses=0; grade(); waiting=false; setHint(MODEHINT[v]); markKeys(); frame(true)});
+segInit('modeSeg',mode,v=>{mode=v; store.set('mode',v); hits=0;misses=0; grade(); waiting=false; setHint(MODEHINT[v]); markKeys(); frame(true); kidStatus(); reflectKid();});
 segInit('handSeg',hands,v=>{hands=v; store.set('hands',v); waiting=false; hitSet=new Set(); okT=t-1e-6; layoutKeyboard(); markKeys(); frame(true);
   if(v==='L'&&!song.L)setHint('Left hand: for this song it is a simple chord accompaniment (three notes together). The right-hand melody keeps playing as backing.'); else if(v==='L')setHint('Left hand practice. The right-hand melody keeps playing as backing, like Lesson L on the PSR-175.');});
 showLoop(); $('bMetro').classList.toggle('on',metro); $('bFing').classList.toggle('on',fingersOn); document.querySelector('.stage').classList.toggle('fingers-on',fingersOn);
@@ -797,8 +804,8 @@ function micNote(midi){ if(!data||mode==='watch')return;
   const hit=rq.notes.find(e=>!hitSet.has(e)&&(e.m===midi||((e.m%12)===pc&&Math.abs(e.m-midi)<=24)));
   if(hit)pressKey(hit.m,keys[hit.m],true);}
 function micLbl(txt){const n=micOn?(txt?'🎤 '+txt:'🎤 …'):'🎤';
-  $('micLbl').textContent=micOn?(txt||'hört zu'):'Mic off'; $('micIco').textContent='🎤';
-  const k=$('kMic'); if(k)k.textContent=micOn?(txt?'🎤 '+txt:'🎤 An'):'🎤 Aus';}
+  $('micLbl').textContent=micOn?(txt||'listening'):'Mic off'; $('micIco').textContent='🎤';
+  const k=$('kMic'); if(k)k.textContent=micOn?('🎤 Hearing your keyboard'+(txt?': '+txt:'')):'🎤 Mic off — playing on screen';}
 function micLoop(){ if(!micAn||!actx)return; micAn.getFloatTimeDomainData(micBuf);
   if(performance.now()<micBlankUntil)return;
   const f=autoCorrelate(micBuf,actx.sampleRate);
@@ -816,26 +823,26 @@ function micProblem(e){
   return '<b>The microphone could not be started.</b> '+((e&&e.message)||'');}
 async function setMic(v){
   if(v&&(!window.isSecureContext||!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)){
-    micOn=false; toast('🎤 Hier nicht möglich'); setHint(micProblem(null));
+    micOn=false; toast('🎤 Not possible here'); setHint(micProblem(null));
     $('bMic').classList.toggle('on',false); const kq=$('kMic'); if(kq)kq.classList.toggle('on',false); micLbl(''); return;}
   if(v){ try{
       const st=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});
       audio(); micStream=st; const src=actx.createMediaStreamSource(st);
       micAn=actx.createAnalyser(); micAn.fftSize=2048; micBuf=new Float32Array(2048); src.connect(micAn);
       micOn=true; micLastFired=-1; micTimer=setInterval(micLoop,70);
-      toast(kid?'🎤 Ich höre dein Keyboard!':'🎤 Listening to your PSR-175');
+      toast('🎤 I can hear your keyboard!');
       if(hands!=='R')setHint('The microphone hears <b>one note at a time</b> — it works best for the right-hand melody. Chords (Left/Both) are better tapped on screen.');
       else setHint('🎤 Mic on: play on your PSR-175 and the song moves on when it hears the right note. Wrong notes are never counted via mic.');
-    }catch(e){ micOn=false; toast('🎤 Hier gesperrt'); setHint(micProblem(e));}}
+    }catch(e){ micOn=false; toast('🎤 Blocked here'); setHint(micProblem(e));}}
   else{ micOn=false; clearInterval(micTimer); micTimer=null;
     if(micStream){micStream.getTracks().forEach(t=>t.stop()); micStream=null;} micAn=null;
-    toast(kid?'Spielen auf dem Bildschirm':'Mic off — play on screen'); }
+    toast('Mic off — play on the screen'); }
   $('bMic').classList.toggle('on',micOn); const k=$('kMic'); if(k)k.classList.toggle('on',micOn); micLbl('');}
 $('bMic').addEventListener('click',()=>setMic(!micOn));
 $('kMic').addEventListener('click',()=>setMic(!micOn));
 
 /* ===== Kindermodus wiring ===== */
-const KIDSET=[['036','⭐','Funkelstern'],['053','🌉','London Bridge'],['013','😊','Freude'],['076','🔔','Jingle Bells'],['077','🌙','Stille Nacht'],['043','🕊️','Amazing Grace']];
+const KIDSET=[['036','⭐','Twinkle'],['053','🌉','London Bridge'],['013','😊','Ode to Joy'],['076','🔔','Jingle Bells'],['077','🌙','Silent Night'],['043','🕊️','Amazing Grace']];
 const kidStars=n=>store.get('stars.'+n,0);
 function kidCards(){const el=$('kcards'); el.innerHTML=KIDSET.map(([n,em,nm])=>{const i=SONGS.findIndex(x=>x.n===n);
   return `<button class="kcard ${song&&song.n===n?'sel':''}" data-i="${i}"><span class="em">${em}</span><span>${nm}</span><span class="st">${'⭐'.repeat(kidStars(n))||'&nbsp;'}</span></button>`}).join('');}
@@ -847,25 +854,24 @@ function syncSegs(){document.querySelectorAll('#modeSeg button').forEach(b=>b.cl
 function setKid(v){kid=v; store.set('kid',v); document.body.classList.toggle('kid',v); $('bKid').classList.toggle('on',v);
   if(v){ if(!KIDSET.some(([n])=>song.n===n))loadSong(SONGS.findIndex(x=>x.n==='036'));
     mode='wait'; hands='R'; if(speed>100||speed<50)setSpeed(70); stop(); seekTo(0); syncSegs(); kidCards(); kidTitleUpd(); reflectKid();
-    toast('Drück die bunte Taste!'); }
+    toast('Press the glowing key!'); }
   layoutKeyboard(); markKeys(); frame(true);}
 $('bKid').addEventListener('click',()=>setKid(!kid));
-$('kbPlay').addEventListener('click',()=>{togglePlay();
-  if(kid&&mode==='wait'&&playing)toast('Drück die bunte Taste!');});
-$('kAgain').addEventListener('click',()=>{audio(); hits=0; misses=0; grade(); stop(); seekTo(0);
-  if(mode==='watch'){togglePlay(true); toast('Von vorne!');} else toast('Von vorne – drück die bunte Taste!');});
+$('kbPlay').addEventListener('click',()=>{audio();
+  if(mode==='wait'){hits=0; misses=0; grade(); stop(); seekTo(0); markKeys(); frame(true); toast('From the top!');}
+  else togglePlay(); kidStatus();});
 $('kListen').addEventListener('click',()=>{audio(); mode='watch'; store.set('mode',mode); waiting=false; hits=0;misses=0;
-  syncSegs(); reflectKid(); stop(); seekTo(0); togglePlay(true); markKeys(); frame(true); toast('Hör gut zu!');});
-$('kPlay2').addEventListener('click',()=>{mode='wait'; store.set('mode',mode); waiting=false; hits=0;misses=0; stop(); seekTo(0); syncSegs(); reflectKid(); markKeys(); frame(true); toast('Drück die bunte Taste!');});
+  syncSegs(); reflectKid(); stop(); seekTo(0); togglePlay(true); markKeys(); frame(true); toast('Listen closely!'); kidStatus();});
+$('kPlay2').addEventListener('click',()=>{mode='wait'; store.set('mode',mode); waiting=false; hits=0;misses=0; stop(); seekTo(0); syncSegs(); reflectKid(); markKeys(); frame(true); toast('Press the glowing key!'); kidStatus();});
 document.querySelectorAll('#kSpeed .kb').forEach(b=>b.addEventListener('click',()=>{setSpeed(+b.dataset.s); reflectKid();
-  toast({50:'🐢 Ganz langsam',70:'🚶 Normal',100:'🐰 Schnell'}[speed]||'');}));
+  toast({50:'🐢 Slow',70:'🚶 Medium',100:'🐰 Fast'}[speed]||''); kidStatus();}));
 $('kcards').addEventListener('click',e=>{const c=e.target.closest('.kcard'); if(!c)return; audio(); loadSong(+c.dataset.i);
   kidCards(); kidTitleUpd(); reflectKid();
-  if(mode==='watch'){togglePlay(true); toast('Hör gut zu!');} else toast('Drück die bunte Taste!');});
+  if(mode==='watch'){togglePlay(true); toast('Listen closely!');} else toast('Press the glowing key!'); kidStatus();});
 function celebrate(){const tot=hits+misses;
   const st=mode==='wait'?(misses===0?3:misses<=3?2:1):(tot?(hits/tot>=.95?3:hits/tot>=.8?2:1):1);
   if(st>kidStars(song.n))store.set('stars.'+song.n,st);
-  toast('Super gemacht! '+'⭐'.repeat(st));
+  toast('Well done! '+'⭐'.repeat(st));
   const stg=document.querySelector('.stage');
   for(let i=0;i<26;i++){const d=document.createElement('span'); d.className='confetti'; d.textContent=['🎉','⭐','✨','🎈','🎵'][i%5];
     d.style.left=(2+Math.random()*94)+'%'; d.style.animationDelay=(Math.random()*.6)+'s'; stg.appendChild(d); setTimeout(()=>d.remove(),2800);}
