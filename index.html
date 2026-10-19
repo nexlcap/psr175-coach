@@ -525,18 +525,25 @@ const fingerTxt=e=>fingersOn&&e&&e.f?` with finger <b>${e.f}</b> (${FN[e.f]})`:'
 const hv=$('hands'),hx=hv.getContext('2d');
 const HS={R:{fx:null,ty:null,p:[0,0,0,0,0,0]},L:{fx:null,ty:null,p:[0,0,0,0,0,0]}};
 function nextGroup(list,i){const e=list[i]; if(!e)return []; return list.filter(x=>Math.abs(x.s-e.s)<1e-6);}
-const SKIN={base:'#e0ae86',light:'#f7d9ba',shade:'#b1805a',deep:'#8f6141',
- line:'rgba(120,72,45,.22)',nail:'#f4dbcf',nailEdge:'rgba(158,102,78,.35)',
- crease:'rgba(128,76,48,.17)',blush:'rgba(222,130,100,.28)'};
+const SKIN={base:'#e3b491',light:'#f9dfc4',shade:'#b3835e',deep:'#8e6244',
+ line:'rgba(120,72,45,.20)',nail:'#f4dbcf',nailEdge:'rgba(158,102,78,.33)',
+ crease:'rgba(128,76,48,.15)',blush:'rgba(224,128,102,.32)'};
+const SKINTEX=(()=>{const c=document.createElement('canvas'); c.width=c.height=72; const g=c.getContext('2d');
+  const id=g.createImageData(72,72);
+  for(let i=0;i<id.data.length;i+=4){const v=190+Math.random()*65; id.data[i]=v; id.data[i+1]=v*.90; id.data[i+2]=v*.80; id.data[i+3]=10+Math.random()*14;}
+  g.putImageData(id,0,0); return c;})();
+let SKINPAT=null;
+function texture(alpha,x,y,w,h){ if(!SKINPAT)SKINPAT=hx.createPattern(SKINTEX,'repeat');
+  hx.globalAlpha=alpha; hx.fillStyle=SKINPAT; hx.fillRect(x,y,w,h); hx.globalAlpha=1;}
 function fingerGeom(bx,by,tx,ty,wb,wt,bend){ // curved finger: quadratic spine, smooth taper, joint bulges
   const dx=tx-bx,dy=ty-by,L=Math.hypot(dx,dy)||1,ux=dx/L,uy=dy/L,px=-uy,py=ux;
   const ex=tx-ux*wt/2,ey=ty-uy*wt/2;
   const mx=(bx+ex)/2+px*(bend||0),my=(by+ey)/2+py*(bend||0);
-  const N=10,S=[],Wd=[];
+  const N=14,S=[],Wd=[];
   for(let i=0;i<=N;i++){const f=i/N,g=1-f;
     S.push([g*g*bx+2*g*f*mx+f*f*ex, g*g*by+2*g*f*my+f*f*ey]);
     let w=wb+(wt-wb)*(f*f*(3-2*f));
-    w*=1+.05*Math.exp(-(f-.32)*(f-.32)/.02)+.04*Math.exp(-(f-.64)*(f-.64)/.016);
+    w*=1+.035*Math.exp(-(f-.33)*(f-.33)/.018)+.028*Math.exp(-(f-.66)*(f-.66)/.014);
     Wd.push(w);}
   const Nm=[];
   for(let i=0;i<=N;i++){const p=S[Math.max(0,i-1)],q=S[Math.min(N,i+1)];
@@ -565,6 +572,18 @@ function drawFinger(bx,by,tx,ty,wb,wt,num,press,bend){
   const rg=hx.createRadialGradient(S[N][0],S[N][1],0,S[N][0],S[N][1],wt*.9);
   rg.addColorStop(0,SKIN.blush); rg.addColorStop(1,'rgba(222,130,100,0)');
   hx.fillStyle=rg; hx.fillRect(S[N][0]-wt,S[N][1]-wt,wt*2,wt*2);
+  const bbx=Math.min(S[0][0],S[N][0])-wb, bby=Math.min(S[0][1],S[N][1])-wb,
+        bbw=Math.abs(S[0][0]-S[N][0])+wb*2, bbh=Math.abs(S[0][1]-S[N][1])+wb*2;
+  texture(.5,bbx,bby,bbw,bbh);
+  // lengthwise light: brighter toward the tip, gently shaded toward the base
+  const lg=hx.createLinearGradient(S[N][0],S[N][1],S[0][0],S[0][1]);
+  lg.addColorStop(0,'rgba(255,246,232,.13)'); lg.addColorStop(.45,'rgba(255,246,232,0)'); lg.addColorStop(1,'rgba(90,50,28,.11)');
+  hx.fillStyle=lg; hx.fillRect(bbx,bby,bbw,bbh);
+  // soft specular on the first knuckle
+  const ki=Math.round(.34*N), kp=S[ki];
+  const sg=hx.createRadialGradient(kp[0],kp[1],0,kp[0],kp[1],G.Wd[ki]*.5);
+  sg.addColorStop(0,'rgba(255,250,240,.14)'); sg.addColorStop(1,'rgba(255,250,240,0)');
+  hx.fillStyle=sg; hx.fillRect(kp[0]-G.Wd[ki],kp[1]-G.Wd[ki],G.Wd[ki]*2,G.Wd[ki]*2);
   hx.restore();
   // joint creases: soft shadow line with a light line beneath
   [.32,.62].forEach(f=>{const i=Math.round(f*N),p=S[i],n=G.Nm[i],w=G.Wd[i]*.32,u2=G.ux,v2=G.uy;
@@ -572,16 +591,24 @@ function drawFinger(bx,by,tx,ty,wb,wt,num,press,bend){
     hx.beginPath(); hx.moveTo(p[0]-n[0]*w,p[1]-n[1]*w); hx.quadraticCurveTo(p[0]+u2*2.2,p[1]+v2*2.2,p[0]+n[0]*w,p[1]+n[1]*w); hx.stroke();
     hx.strokeStyle='rgba(255,240,224,.13)';
     hx.beginPath(); hx.moveTo(p[0]-n[0]*w*.8+u2*1.8,p[1]-n[1]*w*.8+v2*1.8); hx.quadraticCurveTo(p[0]+u2*3.8,p[1]+v2*3.8,p[0]+n[0]*w*.8+u2*1.8,p[1]+n[1]*w*.8+v2*1.8); hx.stroke();});
-  // fingernail with lunula and a sheen
-  const nl=Math.min(G.L*.17,wt*.44), nx2=S[N][0]-G.ux*nl*.9, ny2=S[N][1]-G.uy*nl*.9;
-  hx.beginPath(); hx.ellipse(nx2,ny2,nl,wt*.26,G.a,0,7);
+  // fingernail: rounded nail plate with lunula and a sheen
+  const nl=Math.min(G.L*.17,wt*.44), nx2=S[N][0]-G.ux*nl*.9, ny2=S[N][1]-G.uy*nl*.9, nw=wt*.52;
+  hx.save(); hx.translate(nx2,ny2); hx.rotate(G.a);
+  hx.beginPath();
+  hx.moveTo(-nl*.85,-nw*.34);
+  hx.quadraticCurveTo(-nl*1.02,0,-nl*.85,nw*.34);
+  hx.lineTo(nl*.3,nw*.5);
+  hx.quadraticCurveTo(nl*1.02,nw*.3,nl*1.02,0);
+  hx.quadraticCurveTo(nl*1.02,-nw*.3,nl*.3,-nw*.5);
+  hx.closePath();
   hx.fillStyle=kid&&num?FCOL[num]:SKIN.nail; hx.fill();
   hx.strokeStyle=SKIN.nailEdge; hx.lineWidth=1; hx.stroke();
   if(!(kid&&num)){
-    hx.beginPath(); hx.ellipse(nx2-G.ux*nl*.5,ny2-G.uy*nl*.5,nl*.36,wt*.13,G.a,0,7);
-    hx.fillStyle='rgba(255,255,255,.38)'; hx.fill();
-    hx.beginPath(); hx.ellipse(nx2,ny2,nl*.72,wt*.18,G.a,-2.7,-1.5);
-    hx.strokeStyle='rgba(255,255,255,.4)'; hx.lineWidth=1.2; hx.stroke();}
+    hx.beginPath(); hx.ellipse(-nl*.5,0,nl*.3,nw*.3,0,0,7);
+    hx.fillStyle='rgba(255,255,255,.35)'; hx.fill();
+    hx.beginPath(); hx.moveTo(-nl*.45,-nw*.3); hx.quadraticCurveTo(nl*.25,-nw*.42,nl*.7,-nw*.14);
+    hx.strokeStyle='rgba(255,255,255,.42)'; hx.lineWidth=1.2; hx.lineCap='round'; hx.stroke();}
+  hx.restore();
   // small finger number on the nail
   if(num){hx.fillStyle=kid?'#fff':'rgba(95,55,35,.62)'; hx.font=`700 ${Math.max(9,Math.round(wt*.36))}px Archivo, sans-serif`; hx.textAlign='center'; hx.textBaseline='middle'; hx.fillText(num,nx2,ny2+.5);}
   return G;}
@@ -592,7 +619,7 @@ function drawHands(){
   if(!fingersOn||!data)return;
   const kbTop=$('lane').offsetHeight, kbH=$('kbd').offsetHeight, kbBot=kbTop+kbH, sc=$('kscroll').scrollLeft;
   const u=Math.max(22,Math.min(84,whiteW));                 // one white key ≈ one finger spacing
-  const WB=[0,1.0,.84,.88,.82,.70].map(x=>x*u), WT=[0,.84,.70,.74,.68,.58].map(x=>x*u);
+  const WB=[0,1.0,.84,.88,.82,.70].map(x=>x*u), WT=[0,.80,.66,.70,.64,.55].map(x=>x*u);
   const restTip=[0,.84,.62,.55,.60,.70];                       // where each fingertip rests (fraction down the keys)
   const lipH=H-kbBot;
   const list=[]; if(shown('L'))list.push(['L',colors.lh]); if(shown('R'))list.push(['R',colors.rh]);
@@ -625,30 +652,38 @@ function drawHands(){
     // 1) thumb (drawn first so the back of the hand covers its root)
     drawFinger(tbx,tby,S.fx[1],tipY(1),WB[1],WT[1],1,S.p[1],dir*u*.22);
     // 2) back of the hand
-    hx.save();
-    hx.beginPath();
     const e2=kx[2]-dir*WB[2]*.6, e5=kx[5]+dir*WB[5]*.62;
-    hx.moveTo(tbx-dir*.55*u,tby+.2*u);
-    hx.quadraticCurveTo(tbx+dir*.1*u,ky[2]-.05*u,e2,ky[2]+.05*u);
-    hx.quadraticCurveTo(cxm,kyBase-.35*u,e5,ky[5]);
-    hx.quadraticCurveTo(e5+dir*.25*u,ky[5]+1.6*u,e5-dir*.15*u,H+u*2);
-    hx.lineTo(tbx+dir*.1*u,H+u*2);
-    hx.quadraticCurveTo(tbx-dir*.75*u,tby+1.2*u,tbx-dir*.55*u,tby+.2*u);
-    hx.closePath();
+    const backPath=()=>{hx.beginPath();
+      hx.moveTo(tbx-dir*.55*u,tby+.2*u);
+      hx.quadraticCurveTo(tbx+dir*.1*u,ky[2]-.05*u,e2,ky[2]+.05*u);
+      hx.quadraticCurveTo(cxm,kyBase-.35*u,e5,ky[5]);
+      hx.quadraticCurveTo(e5+dir*.3*u,ky[5]+.9*u,e5+dir*.12*u,ky[5]+1.9*u);  // hypothenar bulge
+      hx.quadraticCurveTo(e5-dir*.05*u,ky[5]+2.8*u,e5-dir*.3*u,H+u*2);
+      hx.lineTo(tbx+dir*.1*u,H+u*2);
+      hx.quadraticCurveTo(tbx-dir*.75*u,tby+1.2*u,tbx-dir*.55*u,tby+.2*u);
+      hx.closePath();};
+    backPath();
+    hx.save();
     hx.shadowColor='rgba(40,20,8,.26)'; hx.shadowBlur=16; hx.shadowOffsetY=7;
     const g=hx.createRadialGradient(cxm-dir*u*.5,kyBase+.6*u,u*.3,cxm,kyBase+1.3*u,u*3.6);
     g.addColorStop(0,SKIN.light); g.addColorStop(.45,SKIN.base); g.addColorStop(.82,SKIN.shade); g.addColorStop(1,SKIN.deep);
     hx.fillStyle=g; hx.fill(); hx.restore(); hx.strokeStyle=SKIN.line; hx.lineWidth=1; hx.stroke();
-    // subtle knuckle mounds and tendons on the back of the hand
+    // inside the hand: texture, occlusion under the finger bases, knuckle mounds, soft tendons
+    hx.save(); backPath(); hx.clip();
+    texture(.5,Math.min(e2,e5)-u,kyBase-u,Math.abs(e5-e2)+u*2,H);
+    const og=hx.createLinearGradient(0,kyBase-.5*u,0,kyBase+.55*u);
+    og.addColorStop(0,'rgba(90,50,28,.16)'); og.addColorStop(1,'rgba(90,50,28,0)');
+    hx.fillStyle=og; hx.fillRect(Math.min(e2,e5)-u,kyBase-.5*u,Math.abs(e5-e2)+u*2,u*1.1);
     hx.lineCap='round';
     for(let i=2;i<=5;i++){
-      const kg=hx.createRadialGradient(kx[i],ky[i]+u*.22,0,kx[i],ky[i]+u*.22,u*.42);
-      kg.addColorStop(0,'rgba(255,238,220,.20)'); kg.addColorStop(1,'rgba(255,238,220,0)');
-      hx.fillStyle=kg; hx.fillRect(kx[i]-u*.45,ky[i]-u*.25,u*.9,u*.9);
-      hx.strokeStyle='rgba(255,236,220,.12)'; hx.lineWidth=Math.max(1.5,u*.08);
-      hx.beginPath(); hx.moveTo(kx[i],ky[i]+u*.3); hx.quadraticCurveTo(kx[i]+(cxm-kx[i])*.18,ky[i]+u*.9,kx[i]+(cxm-kx[i])*.4,ky[i]+u*1.7); hx.stroke();
-      hx.strokeStyle='rgba(120,72,45,.08)'; hx.lineWidth=1;
-      hx.beginPath(); hx.moveTo(kx[i]+u*.14,ky[i]+u*.32); hx.quadraticCurveTo(kx[i]+(cxm-kx[i])*.18+u*.14,ky[i]+u*.95,kx[i]+(cxm-kx[i])*.4+u*.12,ky[i]+u*1.68); hx.stroke();}
+      const kg=hx.createRadialGradient(kx[i],ky[i]+u*.26,0,kx[i],ky[i]+u*.26,u*.44);
+      kg.addColorStop(0,'rgba(255,238,220,.22)'); kg.addColorStop(1,'rgba(255,238,220,0)');
+      hx.fillStyle=kg; hx.fillRect(kx[i]-u*.45,ky[i]-u*.2,u*.9,u*.95);
+      hx.strokeStyle='rgba(255,236,220,.10)'; hx.lineWidth=Math.max(1.5,u*.07);
+      hx.beginPath(); hx.moveTo(kx[i],ky[i]+u*.34); hx.quadraticCurveTo(kx[i]+(cxm-kx[i])*.18,ky[i]+u*.95,kx[i]+(cxm-kx[i])*.42,ky[i]+u*1.8); hx.stroke();
+      hx.strokeStyle='rgba(120,72,45,.07)'; hx.lineWidth=1;
+      hx.beginPath(); hx.moveTo(kx[i]+u*.13,ky[i]+u*.36); hx.quadraticCurveTo(kx[i]+(cxm-kx[i])*.18+u*.13,ky[i]+u*.98,kx[i]+(cxm-kx[i])*.42+u*.11,ky[i]+u*1.78); hx.stroke();}
+    hx.restore();
     // 3) fingers 2–5, back to front so the middle finger sits on top
     const order=dir===1?[5,4,2,3]:[5,4,2,3];
     const vec=[];
