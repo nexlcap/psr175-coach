@@ -200,6 +200,7 @@ body.nopanel .kbd{height:clamp(130px,32vh,300px)}
   .lcd{grid-area:lcd}
   .stage{grid-area:stage;min-height:0}
   .bar{grid-area:bar;flex-direction:column;flex-wrap:nowrap;align-items:stretch;gap:8px;overflow-y:auto;min-height:0;padding-bottom:0}
+  .bar>*{flex-shrink:0}
   .bar>.grp:first-child{justify-content:space-between}
   .bar>.grp:first-child .tb{flex:1;min-width:0;padding:0}
   .bar>.grp:first-child .tb.play{flex:1.6}
@@ -207,8 +208,10 @@ body.nopanel .kbd{height:clamp(130px,32vh,300px)}
   .spd{flex:none;padding:6px 8px;gap:4px}
   .seg{display:flex}
   .seg button{flex:1;padding:0 4px;font-size:12px}
-  .row2{display:flex;gap:8px}
-  .row2 .seg{flex:1}
+  .row2{display:flex;flex-wrap:wrap;gap:8px}
+  .row2 .seg{flex:1 1 100%}
+  .row2 .seg button{padding:0 8px;font-size:13px}
+  .row2 .tb{flex:1;min-width:0}
   .prog{flex:none}
   .prog span{font-size:12px}
   .hint{font-size:12px}
