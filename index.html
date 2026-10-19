@@ -617,8 +617,8 @@ function drawHands(){
   if(!fingersOn||!data)return;
   const kbTop=$('lane').offsetHeight, kbH=$('kbd').offsetHeight, kbBot=kbTop+kbH, sc=$('kscroll').scrollLeft;
   const u=Math.max(22,Math.min(84,whiteW));                 // one white key ≈ one finger spacing
-  const WB=[0,.94,.80,.84,.78,.68].map(x=>x*u), WT=[0,.80,.68,.72,.66,.57].map(x=>x*u);
-  const restTip=[0,.86,.67,.61,.65,.73];                       // where each fingertip rests (fraction down the keys)
+  const WB=[0,.80,.67,.71,.66,.57].map(x=>x*u), WT=[0,.68,.57,.60,.55,.47].map(x=>x*u);
+  const restTip=[0,.85,.65,.59,.63,.71];                       // where each fingertip rests (fraction down the keys)
   const lipH=H-kbBot;
   const list=[]; if(shown('L'))list.push(['L',colors.lh]); if(shown('R'))list.push(['R',colors.rh]);
   list.forEach(([h,col])=>{
